@@ -13,8 +13,9 @@ __global__ void vecAdd(float *a, float *b, float *c, int n)
         c[id] = a[id] + b[id];
 }
 
-extern "C" void vecadd_wrapper(int n, float a[n], float b[n], float c[n])
+extern "C" void vecadd_wrapper(int n, float h_a[n], float h_b[n], float h_c[n])
 {
+
     // Device input vectors
     float *d_a;
     float *d_b;
