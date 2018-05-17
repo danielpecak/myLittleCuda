@@ -3,7 +3,7 @@
 #include <math.h>
 
 // CUDA kernel. Each thread takes care of one element of c
-__global__ void vecAdd(float *a, float *b, float *c, int n)
+__global__ void vecAdd(double *a, double *b, double *c, int n)
 {
     // Get our global thread ID
     int id = blockIdx.x*blockDim.x+threadIdx.x;
@@ -13,17 +13,17 @@ __global__ void vecAdd(float *a, float *b, float *c, int n)
         c[id] = a[id] + b[id];
 }
 
-extern "C" void vecadd_wrapper(int n, float h_a[n], float h_b[n], float h_c[n])
+extern "C" void vecadd_wrapper(int n, double h_a[], double h_b[], double h_c[])
 {
 
     // Device input vectors
-    float *d_a;
-    float *d_b;
+    double *d_a;
+    double *d_b;
     //Device output vector
-    float *d_c;
+    double *d_c;
 
     // Size, in bytes, of each vector
-    size_t bytes = n*sizeof(float);
+    size_t bytes = n*sizeof(double);
 
     // Allocate memory for each vector on GPU
     cudaMalloc(&d_a, bytes);
@@ -38,7 +38,7 @@ extern "C" void vecadd_wrapper(int n, float h_a[n], float h_b[n], float h_c[n])
     // Number of threads in each thread block
     blockSize = 1024;
     // Number of thread blocks in grid
-    gridSize = (int)ceil((float)n/blockSize);
+    gridSize = (int)ceil((double)n/blockSize);
     // Execute the kernel
     vecAdd<<<gridSize, blockSize>>>(d_a, d_b, d_c, n);
 
