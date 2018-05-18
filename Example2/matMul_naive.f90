@@ -10,6 +10,7 @@ end module matrix
 program matMul
   use ISO_C_BINDING
   use matrix
-
+  print *, "Fortran start"
   call matmul_wrapper()
+  print *, "Fortran koniec"
 end program matMul
