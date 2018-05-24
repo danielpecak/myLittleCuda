@@ -10,9 +10,9 @@ __global__ void matmul(double *a, double *b, double *c, int n)
   // Get global thread ID
   int Col = blockIdx.x*blockDim.x+threadIdx.x;
   int Row = blockIdx.y*blockDim.y+threadIdx.y;
-
   // Not out of bounds
   if((Col<n) && (Row<n)) {// Mutliply matrices
+    // printf("Hello thread %d\n", threadIdx.x);
     // c[Row*n + Col] = 0;
     double sum = 0.0;
     for(int k=0;k<n;k++) {
@@ -26,7 +26,8 @@ __global__ void matmul(double *a, double *b, double *c, int n)
 extern "C" void matmul_wrapper()
 {
   // Size of matrix
-  int n = 10000;
+  int n = 1000;
+  // int n = 3;
 
   // Host input matrices
   double *h_a;
@@ -47,6 +48,7 @@ extern "C" void matmul_wrapper()
   h_a = (double*)malloc(bytes);
   h_b = (double*)malloc(bytes);
   h_c = (double*)malloc(bytes);
+
 
   // Allocate memory for each matrix on GPU
   cudaMalloc(&d_a, bytes);
@@ -71,8 +73,8 @@ extern "C" void matmul_wrapper()
 
   int blockSize, gridSize;
   // Number of threads in each thread block
-  blockSize = 2*1024;
-  // blockSize = 32;
+  // blockSize = 1024;
+  blockSize = 32;
   // Number of thread blocks in grid
   gridSize = (int)ceil((double)n/blockSize);
 
@@ -84,9 +86,11 @@ extern "C" void matmul_wrapper()
   // Execute the kernel
   matmul<<<dimGrid, dimBlock>>>(d_a,d_b,d_c, n);
   printf(" C Kernel executed \n");
-
   // Copy array back to host
   cudaMemcpy(h_c, d_c, bytes, cudaMemcpyDeviceToHost);
+  // h_c[0] = 0.5;
+  // h_c[1] = 1.5;
+  // h_c[3] = 3.5;
 
   // CHECK RESULTS for 3x3 MATRIX
   // printf("%f %f %f\n",h_a[0],h_a[1],h_a[2]);
