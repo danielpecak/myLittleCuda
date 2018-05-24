@@ -1,4 +1,7 @@
-all: matmul_naive matmulfortran
+all: matmul_naive matmulfortran matmul_half
+
+matmul_half: matmul_half.o matMulWrapperF2.o
+	gfortran $^ -o $@ -L/usr/local/cuda/lib64 -lcudart -lstdc++
 
 matmul_naive: matMul_naive.o matMulWrapperF.o
 	gfortran $^ -o $@ -L/usr/local/cuda/lib64 -lcudart -lstdc++
@@ -6,7 +9,13 @@ matmul_naive: matMul_naive.o matMulWrapperF.o
 matMul_naive.o: matMul_naive.f90
 	gfortran -c $< -o $@
 
+matmul_half.o: matMul_half.f90
+	gfortran -c $< -o $@
+
 matMulWrapperF.o: matMulWrapperF.cu
+	nvcc  -c $<
+
+matMulWrapperF2.o: matMulWrapperF2.cu
 	nvcc  -c $<
 
 matmulfortran: matMul_naiveFORTRAN.f90
