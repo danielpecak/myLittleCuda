@@ -1,0 +1,42 @@
+module mat
+contains
+  attributes(global) subroutine matmul(a, b, c)
+    implicit none
+    real :: a(:,:), b(:,:), c(:,:), sum
+    integer :: i,j,k,n
+    n = size(a,1)
+    i = blockDim%x * (blockIdx%x - 1) + threadIdx%x
+    j = blockDim%y * (blockIdx%y - 1) + threadIdx%y
+
+    if ((i <= n) .and. (j <= n)) then
+      sum = 0.d0
+      do k=1,n
+        sum = sum + a(i,k)*b(k,j)
+      enddo!k
+      c(i,j) = sum
+    endif
+  end subroutine matmul 
+end module mat
+
+
+
+program testAddVec
+  use mat
+  use cudafor
+  implicit none
+  integer, parameter :: n = 4000
+  real :: a(n,n), b(n,n), c(n,n)
+  real, device :: a_d(n,n), b_d(n,n), c_d(n,n)
+  type(dim3) :: grid, tBlock
+
+  tBlock = dim3(32,32,1)
+  grid = dim3(ceiling(real(n)/tBlock%x),ceiling(real(n)/tBlock%y),1)
+
+  a = 1.0; b = 2.0; c = 0.0
+  a_d = a
+  b_d = b
+  call matmul<<<grid, tBlock>>>(a_d, b_d, c_d)
+  c = c_d
+!  write(*,*) 'Max error: ', maxval(abs(y-4.0))
+print *, c(1:10,1:10)
+end program testAddVec
