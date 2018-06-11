@@ -15,13 +15,27 @@ program testSaxpy
   use mathOps
   use cudafor
   implicit none
-  integer, parameter :: N = 40000
-  real :: x(N), y(N), a
+!  integer, parameter :: N = 935*10**6
+  integer, parameter :: N = 98*10**7
+  real, allocatable :: x(:), y(:)
+
+  real :: a
   real, device :: x_d(N), y_d(N)
   type(dim3) :: grid, tBlock
 
-  tBlock = dim3(256,1,1)
+  allocate(x(N))
+  allocate(y(N))
+
+
+
+  print *, "Memory (GB): ", 2*4.0*n/(10**9)
+
+  tBlock = dim3(2**10,1,1)
   grid = dim3(ceiling(real(N)/tBlock%x),1,1)
+
+  print *, "Threads:   ", tBlock%x*tBlock%y*tBlock%z
+  print *, "Block Dim: ", tBlock%x
+  print *, "Grid Dim:  ", grid%x
 
   x = 1.0; y = 2.0; a = 2.0
   x_d = x
@@ -29,4 +43,7 @@ program testSaxpy
   call saxpy<<<grid, tBlock>>>(x_d, y_d, a)
   y = y_d
   write(*,*) 'Max error: ', maxval(abs(y-4.0))
+
+  deallocate(x)
+  deallocate(y)
 end program testSaxpy
