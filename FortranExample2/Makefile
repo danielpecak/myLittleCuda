@@ -1,9 +1,10 @@
-all: bin/addvec
+all: bin/addvec bin/addvec_pinned
 
-bin/addvec: addVec.cuf mod10mat.o
-	pgf90 -o bin/addvec addVec.cuf mod10mat.o
+bin/%: %.cuf mod10mat.o
+	pgf90 -o $@ $^ -mcmodel=medium
 
 %.o: %.cuf
-	pgf -c $^
+	pgf90 -c $^ -mcmodel=medium
 
-
+clear:
+	rm *.o *.mod bin/*

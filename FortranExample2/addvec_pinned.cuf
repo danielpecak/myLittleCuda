@@ -1,0 +1,34 @@
+program testAddVec
+  use mat
+  use cudafor
+  implicit none
+  integer, parameter :: n = 18000
+  real, allocatable, pinned :: a(:,:), b(:,:), c(:,:)
+  real, device :: a_d(n,n), b_d(n,n), c_d(n,n)
+  type(dim3) :: grid, tBlock
+
+  allocate(a(n,n),b(n,n),c(n,n))
+
+  print *, "Memory (GB): ", 3*8.0*n**2/(10**9)
+
+  tBlock = dim3(2**5,2**5,1)
+  grid = dim3(ceiling(real(n)/tBlock%x),ceiling(real(n)/tBlock%y),1)
+  print *, grid%x, grid%y, grid%z
+
+  print *, "Threads:   ", tBlock%x*tBlock%y*tBlock%z
+  print *, "Block Dim: ", tBlock%x, tBlock%y, tBlock%z
+  print *, "Grid Dim:  ", grid%x, grid%y, grid%z
+
+  a = 1.0; b = 2.0; c = 0.0
+  a_d = a
+  b_d = b
+  call matmul<<<grid, tBlock>>>(a_d, b_d, c_d)
+  c = c_d
+!  write(*,*) 'Max error: ', maxval(abs(y-4.0))
+print *, c(1:3,1:3)
+
+  if (allocated(a)) deallocate(a)
+  if (allocated(b)) deallocate(b)
+  if (allocated(c)) deallocate(c)
+
+end program testAddVec
